@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2019
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gh0st", "gh0st\gh0st.vcxproj", "{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "install", "Server\install\install.vcxproj", "{E582224F-D06A-4267-8C4E-523229099D0E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "svchost", "Server\svchost\svchost.vcxproj", "{848ECB78-A6B4-4D97-9C15-887447E4FA4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Console|x86 = Console|x86
+		Release|x86 = Release|x86
+		Template|x86 = Template|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Console|x86.ActiveCfg = Release|Win32
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Console|x86.Build.0 = Release|Win32
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Release|x86.ActiveCfg = Release|Win32
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Release|x86.Build.0 = Release|Win32
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Template|x86.ActiveCfg = Release|Win32
+		{C8C606CE-BCA0-41CB-945B-E3455DBD2CC8}.Template|x86.Build.0 = Release|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Console|x86.ActiveCfg = Template|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Console|x86.Build.0 = Template|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Release|x86.ActiveCfg = Release|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Release|x86.Build.0 = Release|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Template|x86.ActiveCfg = Template|Win32
+		{E582224F-D06A-4267-8C4E-523229099D0E}.Template|x86.Build.0 = Template|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Console|x86.ActiveCfg = Console|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Console|x86.Build.0 = Console|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Release|x86.ActiveCfg = Release|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Release|x86.Build.0 = Release|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Template|x86.ActiveCfg = Template|Win32
+		{848ECB78-A6B4-4D97-9C15-887447E4FA4B}.Template|x86.Build.0 = Template|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {471F3DB9-D59C-4AE9-B08F-7AEC520DFEDB}
+	EndGlobalSection
+EndGlobal

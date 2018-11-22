@@ -1,0 +1,4 @@
+﻿install.obj : warning LNK4229: 出現無效的指示詞 '/opt:nowin98'，已忽略
+install.obj : warning LNK4229: 出現無效的指示詞 '/IGNORE:4078'，已忽略
+install.obj : warning LNK4254: 區段 '.data' (C0000040) 以不同的屬性合併到 '.text' (60000020)
+  install.vcxproj -> C:\Users\yichin\Desktop\gh0st3.6_src-master\gh0st3.6_src\Template\install.exe

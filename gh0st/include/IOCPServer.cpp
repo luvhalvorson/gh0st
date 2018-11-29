@@ -72,7 +72,7 @@ CIOCPServer::CIOCPServer()
 	m_nRecvKbps = 0;
 
 	m_nMaxConnections = 10000;
-	m_nKeepLiveTime = 1000 * 60 * 3; // Èý·ÖÖÓÌ½²âÒ»´Î
+	m_nKeepLiveTime = 1000 * 60 * 3; // 3¿¿ 
 	// Packet Flag;
 	BYTE bPacketFlag[] = {'G', 'h', '0', 's', 't'};
 	memcpy(m_bPacketFlag, bPacketFlag, sizeof(bPacketFlag));
@@ -376,9 +376,9 @@ void CIOCPServer::OnAccept()
 
 	// ÉèÖÃ³¬Ê±ÏêÏ¸ÐÅÏ¢
 	tcp_keepalive	klive;
-	klive.onoff = 1; // ÆôÓÃ±£»î
+	klive.onoff = 1;  //enable keep-alive
 	klive.keepalivetime = m_nKeepLiveTime;
-	klive.keepaliveinterval = 1000 * 10; // ÖØÊÔ¼ä¸ôÎª10Ãë Resend if No-Reply
+	klive.keepaliveinterval = 1000 * 10; //10¿ Resend if no-reply
 	WSAIoctl
 		(
 		pContext->m_Socket, 

